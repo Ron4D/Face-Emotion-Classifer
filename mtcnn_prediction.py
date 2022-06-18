@@ -49,127 +49,132 @@ class img_prediction(object):
     def mtcnn_model_implementation(self, origin_image):
 
         ################################################################################################################
+        try:
 
-        # function to implement the mtcnn classifier
-        def mtcnn_implementation(img):
+            # function to implement the mtcnn classifier
+            def mtcnn_implementation(img):
 
-            # declaring variables for global use
-            global faces
-            global img_with_detections
+                # declaring variables for global use
+                global faces
+                global img_with_detections
 
-            # initializing face variable to 0
-            faces = 0
+                # initializing face variable to 0
+                faces = 0
 
-            # initializing detector variable as mtcnn classifier module
-            detector = MTCNN()
+                # initializing detector variable as mtcnn classifier module
+                detector = MTCNN()
 
-            # detecting faces on our image using mtcnn classifier
-            faces = detector.detect_faces(img)
-            img_with_detections = np.copy(img)
+                # detecting faces on our image using mtcnn classifier
+                faces = detector.detect_faces(img)
+                img_with_detections = np.copy(img)
 
-            # loop to apply detection borders of faces on the image.
-            for result in faces:
+                # loop to apply detection borders of faces on the image.
+                for result in faces:
 
-                x, y, w, h = result['box']
-                x1, y1, = x + w, y + h
-                img_detected = cv2.rectangle(img_with_detections, (x, y), (x1, y1), (0, 0, 255), 2)
+                    x, y, w, h = result['box']
+                    x1, y1, = x + w, y + h
+                    img_detected = cv2.rectangle(img_with_detections, (x, y), (x1, y1), (0, 0, 255), 2)
 
-            # returning face detected image
-            return img_detected
+                # returning face detected image
+                return img_detected
 
-        ################################################################################################################
+            ############################################################################################################
 
-        predicted = mtcnn_implementation(origin_image)
+            predicted = mtcnn_implementation(origin_image)
 
 
 
-        img_with_prediction = np.copy(predicted)
-        img = img_with_prediction
-        emotions_array = []
+            img_with_prediction = np.copy(predicted)
+            img = img_with_prediction
+            emotions_array = []
 
-        # assigning the detected values to the list face_list
-        for face in faces:
 
-            try:
+            # assigning the detected values to the list face_list
+            for face in faces:
 
-                x, y, w, h = face['box']
-                keypoints = face['keypoints']
-                roi = img[y: y + h, x: x + w]
+                try:
 
-                data = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY)
-                data = cv2.resize(data, img_size) / 255.
+                    x, y, w, h = face['box']
+                    keypoints = face['keypoints']
+                    roi = img[y: y + h, x: x + w]
 
-                img_arr = roi
-                img_data = array_to_img(img_arr)
-                data = img_to_array(data)
-                data = np.expand_dims(data, axis=0)
-                scores = model.predict(data)[0]
+                    data = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY)
+                    data = cv2.resize(data, img_size) / 255.
 
-                text_return, percentage_score, classified_obj = analysis.emotion_analysis(scores)
+                    img_arr = roi
+                    img_data = array_to_img(img_arr)
+                    data = img_to_array(data)
+                    data = np.expand_dims(data, axis=0)
+                    scores = model.predict(data)[0]
 
-                text = "{}".format(text_return)
+                    text_return, percentage_score, classified_obj = analysis.emotion_analysis(scores)
 
-                cv2.rectangle(img=img, pt1=(x, y), pt2=(x + w, y + h), color=(0, 255, 0), thickness=2)
-                cv2.putText(img, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)
-                cv2.circle(img, (keypoints['left_eye']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['right_eye']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['nose']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
+                    text = "{}".format(text_return)
 
-                faces_obj = {'face-img': img_data, 'face-prediction': classified_obj,
-                            'scores': np.round(percentage_score, 4)}
-                emotions_array.append(faces_obj)
+                    cv2.rectangle(img=img, pt1=(x, y), pt2=(x + w, y + h), color=(0, 255, 0), thickness=2)
+                    cv2.putText(img, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)
+                    cv2.circle(img, (keypoints['left_eye']), 2, (0, 155, 255), 2)
+                    cv2.circle(img, (keypoints['right_eye']), 2, (0, 155, 255), 2)
+                    cv2.circle(img, (keypoints['nose']), 2, (0, 155, 255), 2)
+                    cv2.circle(img, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
+                    cv2.circle(img, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
 
-            except Exception as e:
+                    faces_obj = {'face-img': img_data, 'face-prediction': classified_obj,
+                                'scores': np.round(percentage_score, 4)}
+                    emotions_array.append(faces_obj)
 
-                print(e)
-                print(roi.shape)
+                except Exception as e:
 
-        array_img = array_to_img(img)
+                    print(e)
+                    print(roi.shape)
 
-        return array_img, len(faces), emotions_array
+            array_img = array_to_img(img)
 
-    ####################################################################################################################
+            return array_img, len(faces), emotions_array
 
-    #
-    def get_image(self):
+            ############################################################################################################
 
-        img = request.files['img-file']
+            #
+            def get_image(self):
 
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        faces = self.detector.detect_faces(rgb)
-        scores = []
+                img = request.files['img-file']
 
-        for face in faces:
-            try:
-                x, y, w, h = face['box']
-                keypoints = face['keypoints']
-                roi = rgb[y: y + h, x: x + w]
+                rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                faces = self.detector.detect_faces(rgb)
+                scores = []
 
-                data = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY)
-                data = cv2.resize(data, img_size) / 255
-                data = img_to_array(data)
-                data = np.expand_dims(data, axis=0)
+                for face in faces:
+                    try:
+                        x, y, w, h = face['box']
+                        keypoints = face['keypoints']
+                        roi = rgb[y: y + h, x: x + w]
 
-                scores = model.predict(data)[0]
-                text_return = analysis(scores)
-                text = "{}".format(text_return)
+                        data = cv2.cvtColor(roi, cv2.COLOR_RGB2GRAY)
+                        data = cv2.resize(data, img_size) / 255
+                        data = img_to_array(data)
+                        data = np.expand_dims(data, axis=0)
 
-                cv2.rectangle(img=img, pt1=(x, y), pt2=(x + w, y + h), color=(0, 0, 255), thickness=2)
-                cv2.putText(img, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-                cv2.circle(img, (keypoints['left_eye']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['right_eye']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['nose']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
-                cv2.circle(img, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
+                        scores = model.predict(data)[0]
+                        text_return = analysis(scores)
+                        text = "{}".format(text_return)
 
-            except Exception as e:
-                print(e)
-                print(roi.shape)
+                        cv2.rectangle(img=img, pt1=(x, y), pt2=(x + w, y + h), color=(0, 0, 255), thickness=2)
+                        cv2.putText(img, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+                        cv2.circle(img, (keypoints['left_eye']), 2, (0, 155, 255), 2)
+                        cv2.circle(img, (keypoints['right_eye']), 2, (0, 155, 255), 2)
+                        cv2.circle(img, (keypoints['nose']), 2, (0, 155, 255), 2)
+                        cv2.circle(img, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
+                        cv2.circle(img, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
 
-        jpeg = cv2.imencode('.jpg', img)
-        return jpeg.tobytes()
+                    except Exception as e:
+                        print(e)
+                        print(roi.shape)
+
+                jpeg = cv2.imencode('.jpg', img)
+                return jpeg.tobytes()
+
+        except:
+            return None, None, None
         ################################################################################################################
 
 ########################################################################################################################

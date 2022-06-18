@@ -89,19 +89,32 @@ def predict_image():
         img = plt.imread(io.BytesIO(base64.decodebytes(bytes(base64_str, "utf-8"))), 0)
 
         predicted_image, num_faces, list_faces = img_prediction.mtcnn_model_implementation(img, img)
-        list_faces_string = PIL_bytes(list_faces)
-        buffered = io.BytesIO()
 
-        predicted_image = predicted_image.resize((400, 400))
-        predicted_image.save(buffered, format="JPEG")
+        if list_faces != None:
 
-        image_string_encoded = base64.b64encode(buffered.getvalue())
-        image_string = image_string_encoded.decode('utf-8')
+            list_faces_string = PIL_bytes(list_faces)
+            buffered = io.BytesIO()
 
-        if num_faces > 0:
+            predicted_image = predicted_image.resize((400, 400))
+            predicted_image.save(buffered, format="JPEG")
 
-            return render_template('index.html', is_uploaded=True, predicted_image=image_string, is_predicted=True,
-                                   is_error=False, list_emotions=list_faces_string)
+            image_string_encoded = base64.b64encode(buffered.getvalue())
+            image_string = image_string_encoded.decode('utf-8')
+
+            if num_faces > 0:
+
+                return render_template('index.html', is_uploaded=True, predicted_image=image_string, is_predicted=True,
+                                       is_error=False, list_emotions=list_faces_string)
+
+            else:
+
+                msg = "-Theres no Face/s detected in that image. Please upload image that fit to the criteria"
+
+                return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='',
+                                       img_width=0, img_height=0, img_upload_isvalid=False, predicted_image='',
+                                       is_predicted=False, is_error=True, is_error_msg=msg)
+
+                print(img)
 
         else:
 
@@ -111,7 +124,6 @@ def predict_image():
                                    img_width=0, img_height=0, img_upload_isvalid=False, predicted_image='',
                                    is_predicted=False, is_error=True, is_error_msg=msg)
 
-            print(img)
 
 ########################################################################################################################
 
@@ -179,7 +191,7 @@ def fetch_upload():
 
             return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='',
                                    img_width=0, img_height=0, img_upload_isvalid=isValid, predicted_image='',
-                                   is_predicted=False, is_error=False, is_error_msg=msg)
+                                   is_predicted=False, is_error=True, is_error_msg=msg)
 
 ########################################################################################################################
 
