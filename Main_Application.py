@@ -39,24 +39,6 @@ def home():
 ########################################################################################################################
 
 #
-def gen(implimentation):
-
-    while True:
-
-        frame = implimentation.get_image()
-
-        yield(b'--frame\r\n' + b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-
-########################################################################################################################
-
-#
-@application.route('/mtcnn_implementation')
-def mtcnn_implementation():
-    return Response(gen(img_prediction()), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-########################################################################################################################
-
-#
 def PIL_bytes(objects):
 
     objects = objects
@@ -108,7 +90,7 @@ def predict_image():
 
             else:
 
-                msg = "-Theres no Face/s detected in that image. Please upload image that fit to the criteria"
+                msg = "-No Face/s detected in that image. Please upload image that fit to the criteria"
 
                 return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='',
                                        img_width=0, img_height=0, img_upload_isvalid=False, predicted_image='',
@@ -127,68 +109,92 @@ def predict_image():
 
 ########################################################################################################################
 
-#
+# function for uploading image
 @application.route('/fetch_upload', methods=['POST'])
 def fetch_upload():
 
     isValid = False
 
+    # condition to check html request method to be used
     if request.method == 'POST':
 
         try:
 
+            # request image file from server
             img = request.files['img-file']
+            # read image size
             img_size = len(img.read())
             img.seek(0)
 
+            # read requested image bytes in normal image format
             imgIO = io.BytesIO(img.stream.read())
             imgIO.seek(0)
 
+            # open image
             image_IO = Image.open(imgIO)
+            # read image width
             img_width = image_IO.size[0]
+            # read image height
             img_height = image_IO.size[1]
+
+            # saving image stream data currently in memory to buffered
             buffered = io.BytesIO()
             buffered.seek(0)
 
+            # save image
             image_IO.save(buffered, "JPEG")
+            # save encoded image data
             image_string_encoded = base64.b64encode(buffered.getvalue())
+            # save decoded image data
             image_string = image_string_encoded.decode('utf-8')
             imgIO.seek(0)
 
             # set img display screen to resize the display
             imgIO_display = image_IO
+
+            # saving image stream data currently in memory to buffered
             buffered2 = io.BytesIO()
             buffered2.seek(0)
 
+            # resizing image
             imgIO_display = imgIO_display.resize((400, 400))
+            # save resized image
             imgIO_display.save(buffered2, format="JPEG")
+            # save encoded image data
             img_display_string_encoded = base64.b64encode(buffered2.getvalue())
+            # save decoded image data
             img_display_string = img_display_string_encoded.decode('utf-8')
             imgIO_display.seek(0)
 
+            # condition to check if image dimensions are valid for the webapp request
             if img_width > 500 and img_height > 500:
 
                 isValid = True
 
+                # return values to the requesting webapp form/page
                 return render_template('/index.html', is_uploaded=True, img_display=img_display_string,
                                        img_path=image_string, encode_img=img_display_string_encoded, img_size=img_size,
                                        img_filename=img.filename, img_width=img_width, img_height=img_height,
                                        img_upload_isvalid=isValid, predicted_image='', is_predicted=False, is_error=False)
 
+            # condition for invalid image dimensions
             else:
 
                 isValid = False
 
+                # return values to the requesting webapp form/page
                 return render_template('/index.html', is_uploaded=True, img_display=img_display_string,
                                        img_path=image_string, encode_img=img_display_string_encoded, img_size=img_size,
                                        img_filename=img.filename, img_width=img_width, img_height=img_height,
                                        img_upload_isvalid=isValid, predicted_image='', is_predicted=False,
                                        is_error=False)
 
+        # error produced for invalid file or image
         except OSError as e:
 
             msg = "Invalid Image - " + str(e)
 
+            # return values to the requesting webapp form/page
             return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='',
                                    img_width=0, img_height=0, img_upload_isvalid=isValid, predicted_image='',
                                    is_predicted=False, is_error=True, is_error_msg=msg)

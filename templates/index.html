@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
     <head>
-        <title>Face Emotion Classifier</title>
+        <title style="color: 004d85">Face Emotion Classifier</title>
             <meta charset="UTF-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
             <link rel="shortcut icon" href="../static/img/faces.png" />
@@ -14,12 +13,6 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
             <style>
-                title{
-                    color: 004d85
-                    }
-                body {
-                    background-color: #0b0f23e8
-                    }
 
                 .img-responsive{
                     height: 80vh !important;
@@ -36,7 +29,7 @@
 
     </head>
 
-    <body style="color:#a8aaff">
+    <body style="background: #0b0f23e8; color:#a8aaff">
          <nav class="navbar navbar-light">
             <span class="navbar-brand mb-0 ml-4" style="color: #004d85; margin-left:20px;">Face Emotion Classifier</span>
          </nav>
@@ -208,13 +201,11 @@
                             </div>
 
                         {% endfor %}
-                        <div class="col-md-6 col-sm-12 col-xs-12">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
                             <a href="/" style="background: #004d85; border-color: #0b0f23e8" class="btn btn-success float-right">Predict more image</a>
                         </div>
                     </div>
             {% endif %}
-
-
 
             <footer class="page-footer font-small mt-6">
                 <div class="footer-copyright text-center py-3">By Ronald Mashava, Source code at:
@@ -257,6 +248,5 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
     </body>
-
 
 </html>
