@@ -1,6 +1,6 @@
 ########################################################################################################################
 
-#
+# Required import libraries
 import io
 import os
 import cv2
@@ -16,21 +16,21 @@ from flask import Flask, render_template, Response, request
 
 ########################################################################################################################
 
-#
+# setting the array_to_image and image_to_array functions
 array_to_img = image_utils.array_to_img
 img_to_array = image_utils.img_to_array
 
 ########################################################################################################################
 
-#
-app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 3024 * 3024
-app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png']
+# Creating and configuring flask webapp
+application = Flask(__name__)
+application.config['MAX_CONTENT_LENGTH'] = 3024 * 3024
+application.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png']
 
 ########################################################################################################################
 
 #
-@app.route('/')
+@application.route('/')
 def home():
     return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='', img_width=0,
                            img_height=0, img_upload_isvalid=False, predicted_image='', is_predicted=False,
@@ -50,7 +50,7 @@ def gen(implimentation):
 ########################################################################################################################
 
 #
-@app.route('/mtcnn_implementation')
+@application.route('/mtcnn_implementation')
 def mtcnn_implementation():
     return Response(gen(img_prediction()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -79,7 +79,7 @@ def PIL_bytes(objects):
 ########################################################################################################################
 
 #
-@app.route('/predict_image', methods=['POST'])
+@application.route('/predict_image', methods=['POST'])
 def predict_image():
 
     if request.method == 'POST':
@@ -116,8 +116,9 @@ def predict_image():
 ########################################################################################################################
 
 #
-@app.route('/fetch_upload', methods=['POST'])
+@application.route('/fetch_upload', methods=['POST'])
 def fetch_upload():
+
     isValid = False
 
     if request.method == 'POST':
@@ -153,27 +154,37 @@ def fetch_upload():
             img_display_string = img_display_string_encoded.decode('utf-8')
             imgIO_display.seek(0)
 
-            if int(img_width) > 500 and int(img_height) > 500:
+            if img_width > 500 and img_height > 500:
 
                 isValid = True
 
-            return render_template('/index.html', is_uploaded=True, img_display=img_display_string,
-                                   img_path=image_string, encode_img=img_display_string_encoded, img_size=img_size,
-                                   img_filename=img.filename, img_width=img_width, img_height=img_height,
-                                   img_upload_isvalid=isValid, predicted_image='', is_predicted=False, is_error=False)
+                return render_template('/index.html', is_uploaded=True, img_display=img_display_string,
+                                       img_path=image_string, encode_img=img_display_string_encoded, img_size=img_size,
+                                       img_filename=img.filename, img_width=img_width, img_height=img_height,
+                                       img_upload_isvalid=isValid, predicted_image='', is_predicted=False, is_error=False)
+
+            else:
+
+                isValid = False
+
+                return render_template('/index.html', is_uploaded=True, img_display=img_display_string,
+                                       img_path=image_string, encode_img=img_display_string_encoded, img_size=img_size,
+                                       img_filename=img.filename, img_width=img_width, img_height=img_height,
+                                       img_upload_isvalid=isValid, predicted_image='', is_predicted=False,
+                                       is_error=False)
 
         except OSError as e:
 
             msg = "Invalid Image - " + str(e)
 
             return render_template('/index.html', is_uploaded=False, img_path='', img_size='', img_filename='',
-                                   img_width=0, img_height=0, img_upload_isvalid=False, predicted_image='',
+                                   img_width=0, img_height=0, img_upload_isvalid=isValid, predicted_image='',
                                    is_predicted=False, is_error=False, is_error_msg=msg)
 
 ########################################################################################################################
 
 #
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)
 
 ########################################################################################################################
